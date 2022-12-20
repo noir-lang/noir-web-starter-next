@@ -1,30 +1,55 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
 
-import initNoirWasm, { acir_from_bytes } from '@noir-lang/noir_wasm';
-import { setup_generic_prover_and_verifier, create_proof, verify_proof } from '@noir-lang/barretenberg/dest/client_proofs';
+import initNoirWasm, { acir_from_bytes } from "@noir-lang/noir_wasm";
+import initBackend, {
+  compute_witnesses,
+  serialise_acir_to_barrtenberg_circuit,
+} from "@noir-lang/aztec_backend";
+import {
+  create_proof,
+  verify_proof,
+  setup_generic_prover_and_verifier,
+  BarretenbergWasm,
+} from "@noir-lang/barretenberg";
 
-const ACIR_PATH = new URL('../circuits/build/main.acir', import.meta.url).href
+const ACIR_PATH = new URL("../circuits/build/main.acir", import.meta.url).href;
 
 let acir, prover, verifier;
 
 let inputs = {
   x: 3,
   y: 4,
+};
+
+export async function execute_procedure() {
+  await initNoirWasm();
+  
+  const barretenberg = await BarretenbergWasm.new();
+  await barretenberg.init();
+
+  acir = acir_from_bytes(
+    new Uint8Array(await (await fetch(ACIR_PATH)).arrayBuffer())
+  );
+
+  const [prover, verifier] = await setup_generic_prover_and_verifier(acir);
+
+  const abi = {
+    x: 4,
+    y: 5,
+  };
+
+  const proof = await create_proof(prover, acir, abi);
+
+  const verified = await verify_proof(verifier, proof);
+
+  console.log("verified: ", verified);
 }
 
 async function prove() {
-  await initNoirWasm("noir_wasm_bg.wasm");
-  // await initBackend("aztec_backend_bg.wasm"); // Commented out for easier debugging on the line above
-
-  acir = acir_from_bytes(new Uint8Array(await (await fetch(ACIR_PATH)).arrayBuffer()));
-  [prover, verifier] = await setup_generic_prover_and_verifier(acir);
-  const proof = await create_proof(prover, acir, inputs);
-  const result = await verify_proof(verifier, proof);
-  console.log(result);
+  execute_procedure();
 }
-
 
 export default function Home() {
   return (
@@ -41,7 +66,7 @@ export default function Home() {
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
+          Get started by editing{" "}
           <code className={styles.code}>pages/index.tsx</code>
         </p>
 
@@ -86,12 +111,12 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
           </span>
         </a>
       </footer>
     </div>
-  )
+  );
 }
