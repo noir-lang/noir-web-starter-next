@@ -2,11 +2,10 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 
+import initialiseResolver from "@noir-lang/noir-source-resolver";
+
 import initNoirWasm, { acir_from_bytes } from "@noir-lang/noir_wasm";
-import initBackend, {
-  compute_witnesses,
-  serialise_acir_to_barrtenberg_circuit,
-} from "@noir-lang/aztec_backend";
+import initBackend, * as aztec_backend from "@noir-lang/aztec_backend";
 import {
   create_proof,
   verify_proof,
@@ -25,13 +24,16 @@ let inputs = {
 
 export async function execute_procedure() {
   await initNoirWasm();
-  
+
+  await initBackend();
   const barretenberg = await BarretenbergWasm.new();
   await barretenberg.init();
 
   acir = acir_from_bytes(
     new Uint8Array(await (await fetch(ACIR_PATH)).arrayBuffer())
   );
+
+  console.log(acir);
 
   const [prover, verifier] = await setup_generic_prover_and_verifier(acir);
 

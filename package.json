@@ -9,10 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@next/env": "^13.0.5",
-    "@noir-lang/aztec_backend": "^0.9.0-287d42d",
-    "@noir-lang/barretenberg": "^2.19.0-b3f5916",
-    "@noir-lang/noir_wasm": "0.11.0",
+    "@next/env": "13.0.5",
+    "@noir-lang/aztec_backend": "0.9.0-287d42d",
+    "@noir-lang/barretenberg": "2.19.0-a35cd3b",
+    "@noir-lang/noir-source-resolver": "1.0.0",
+    "@noir-lang/noir_wasm": "kobyhallx/noir_wasm",
     "@types/node": "18.11.9",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
